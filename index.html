@@ -1,0 +1,904 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Enterprise Agent Delivery Console · Gumloop (synthetic prototype)</title>
+<meta name="description" content="Unofficial synthetic prototype of an Enterprise Agent Delivery Console for a Gumloop Forward Deployed Agentic Engineer. Load a post-sale engagement, review a delivery packet with cited MCP connectors, skills and triggers, choose a human gate, and watch adoption impact. No real data, no login, no Gumloop API.">
+<style>
+  :root {
+    --paper: #faf9f8;
+    --ink: #18181b;
+    --ink-soft: #3f3f46;
+    --gray: #71717a;
+    --gray-soft: #a1a1aa;
+    --line: #e7e5e4;
+    --line-strong: #d6d3d1;
+    --card: #ffffff;
+    --brand: #db2777;
+    --brand-deep: #be185d;
+    --violet: #7c3aed;
+    --brand-soft: #fdf2f8;
+    --brand-line: #f9a8d4;
+    --green: #15803d;
+    --green-soft: #f0fdf4;
+    --green-line: #bbf7d0;
+    --amber: #b45309;
+    --amber-soft: #fffbeb;
+    --amber-line: #fde68a;
+    --red: #b91c1c;
+    --red-soft: #fef2f2;
+    --red-line: #fecaca;
+    --radius: 14px;
+    --shadow: 0 1px 2px rgba(24,24,27,.05), 0 6px 18px rgba(24,24,27,.06);
+    --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  html, body { margin: 0; background: var(--paper); color: var(--ink); }
+  body { font-family: var(--font); font-size: 15px; line-height: 1.45; }
+
+  /* ---------- top bar ---------- */
+  .topbar {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line);
+    background: #ffffff;
+  }
+  .mark { display: flex; align-items: center; gap: 9px; }
+  .logo {
+    width: 26px; height: 26px; border-radius: 8px;
+    display: grid; place-items: center; color: #fff;
+    font-weight: 800; font-size: 14px; line-height: 1;
+    background: linear-gradient(135deg, #ec4899, #8b5cf6);
+  }
+  .name { font-weight: 800; letter-spacing: .01em; font-size: 15px; }
+  .name small { color: var(--gray); font-weight: 600; font-size: 12.5px; }
+  .crumb { color: var(--gray); font-size: 12px; }
+  .crumb .sep { color: var(--gray-soft); margin: 0 5px; }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 999px;
+    font-size: 12px; font-weight: 600; color: var(--gray);
+    background: #fff; border: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .chip.brand { color: var(--brand-deep); background: var(--brand-soft); border-color: var(--brand-line); }
+  .chip.brand .dot { background: var(--brand); }
+
+  /* ---------- walkthrough bar ---------- */
+  .walk {
+    display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap;
+    margin: 12px 14px 14px; padding: 12px 14px;
+    background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+  .walk-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--gray); font-weight: 700; padding-top: 4px; }
+  .steps { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
+  .step-dot {
+    width: 24px; height: 24px; border-radius: 50%;
+    display: grid; place-items: center; font-size: 11px; font-weight: 700;
+    color: var(--gray-soft); background: #f4f4f5;
+  }
+  .step-dot.past { background: var(--ink); color: #fff; }
+  .step-dot.now { background: var(--brand); color: #fff; box-shadow: 0 0 0 3px rgba(219,39,119,.18); }
+  .caption { flex: 1 1 240px; min-width: 0; overflow-wrap: anywhere; color: var(--ink-soft); font-size: 13.5px; font-weight: 500; }
+  .caption b { font-weight: 700; }
+  .walk-actions { display: flex; gap: 8px; margin-top: 2px; }
+  button {
+    font: inherit; touch-action: manipulation;
+    border-radius: 10px; cursor: pointer;
+  }
+  button.primary {
+    font-weight: 700; color: #fff;
+    background: linear-gradient(135deg, #ec4899, #8b5cf6);
+    border: none; padding: 10px 18px;
+  }
+  button.primary:hover { filter: brightness(1.06); }
+  button.primary:disabled { background: #d4d4d8; color: #fff; cursor: default; filter: none; }
+  button.ghost {
+    font-weight: 600; color: var(--gray);
+    background: #fff; border: 1px solid var(--line-strong);
+    padding: 9px 14px;
+  }
+  button.ghost:hover { color: var(--ink); border-color: var(--ink-soft); }
+  button.gate {
+    width: 100%; min-height: 46px;
+    text-align: left; display: flex; align-items: center; gap: 12px;
+    background: #fff; border: 1px solid var(--line-strong);
+    padding: 9px 14px;
+  }
+  button.gate:hover { border-color: var(--brand-line); box-shadow: 0 0 0 2px rgba(219,39,119,.12); }
+  button.gate .gt { font-weight: 700; color: var(--ink); font-size: 14.5px; }
+  button.gate .sub { font-size: 12px; color: var(--gray); line-height: 1.35; margin-top: 1px; }
+  button.gate .icon {
+    flex: 0 0 auto; width: 30px; height: 30px; border-radius: 9px;
+    display: grid; place-items: center; font-size: 13px; font-weight: 800; color: #fff;
+    background: linear-gradient(135deg, #ec4899, #8b5cf6);
+  }
+  button.gate.neutral .icon { background: var(--ink-soft); }
+  button.gate.ghost .icon { background: var(--gray); }
+  button.gate:disabled { opacity: .55; cursor: default; box-shadow: none; }
+  .walk-actions button { min-height: 44px; }
+  button.linklike {
+    background: none; border: none; color: var(--brand-deep);
+    font-weight: 700; font-size: 13px; padding: 6px 2px; text-decoration: underline;
+  }
+
+  /* ---------- layout ---------- */
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(0,1fr);
+    gap: 14px; align-items: start;
+    margin: 0 14px;
+  }
+  .card {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 14px 15px;
+  }
+  .card h3 {
+    margin: 0 0 2px; font-size: 13.5px; font-weight: 800; letter-spacing: .01em;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .card h3 .tag { margin-left: auto; }
+  .card .sub { margin: 0 0 10px; font-size: 12.5px; color: var(--gray); }
+  .card .rule { height: 1px; background: var(--line); margin: 12px 0; border: none; }
+  .flash { outline: 3px solid rgba(219,39,119,.45); outline-offset: 2px; animation: pulse 1.4s ease-in-out 3; }
+  @keyframes pulse { 0%,100% { outline-color: rgba(219,39,119,.45); } 50% { outline-color: rgba(219,39,119,.10); } }
+  .hidden { display: none !important; }
+  .fade-in { animation: fadeIn .45s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  /* ---------- engagement stub ---------- */
+  .kv { display: grid; grid-template-columns: minmax(0,1fr); gap: 2px 10px; font-size: 13.5px; }
+  .kv-row { display: grid; grid-template-columns: 108px minmax(0,1fr); gap: 3px 10px; padding: 5px 0; border-top: 1px solid #f4f4f5; }
+  .kv-row:first-child { border-top: none; }
+  .kv-row dt { color: var(--gray-soft); font-weight: 600; font-size: 12.5px; }
+  .kv-row dd { margin: 0; color: var(--ink-soft); font-weight: 600; overflow-wrap: anywhere; }
+  .metric {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin-top: 9px; padding: 8px 10px; border-radius: 10px;
+    background: var(--brand-soft); border: 1px solid var(--brand-line);
+    font-size: 13px;
+  }
+  .metric b { color: var(--brand-deep); }
+
+  /* ---------- process map ---------- */
+  .flow { display: flex; flex-direction: column; gap: 8px; }
+  .flow-step {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 10px; border-radius: 10px;
+    border: 1px solid var(--line); background: #fafafa;
+    font-size: 13px; color: var(--ink-soft);
+  }
+  .flow-step .n {
+    flex: 0 0 auto; width: 20px; height: 20px; border-radius: 6px;
+    display: grid; place-items: center; font-size: 11px; font-weight: 800;
+    background: var(--ink); color: #fff; margin-top: 1px;
+  }
+  .flow-step .txt b { color: var(--ink); font-weight: 700; }
+  .flow-arrow { text-align: center; color: var(--gray-soft); font-size: 13px; line-height: 1; }
+
+  /* ---------- delivery packet ---------- */
+  .packet-group { margin-bottom: 10px; }
+  .packet-group:last-child { margin-bottom: 0; }
+  .packet-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: .07em;
+    color: var(--gray); font-weight: 800; margin-bottom: 5px;
+  }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .conn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 11px; border-radius: 999px;
+    font-size: 12.5px; font-weight: 700; color: var(--ink-soft);
+    background: #fff; border: 1px solid var(--line-strong);
+    white-space: nowrap;
+  }
+  .conn .ok { color: var(--green); }
+  .conn .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+  .conn.pending { color: var(--amber); border-color: var(--amber-line); background: var(--amber-soft); }
+  .conn.pending .dot { background: var(--amber); }
+  .packet-line {
+    display: flex; gap: 8px; align-items: flex-start;
+    font-size: 13px; color: var(--ink-soft);
+    padding: 7px 10px; border-radius: 10px;
+    border: 1px solid var(--line); background: #fafafa;
+  }
+  .packet-line b { color: var(--ink); }
+  .ready-strip { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .readiness {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 9px; border-radius: 999px;
+    font-size: 11.5px; font-weight: 700; color: var(--gray);
+    background: #f4f4f5; border: 1px solid #ececee;
+  }
+  .readiness span { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+  .readiness.warn { color: var(--amber); }
+  .readiness.warn span { background: var(--amber); }
+  pre.dshape {
+    margin: 0; padding: 10px 12px; border-radius: 10px;
+    background: #18181b; color: #f4f4f5;
+    font: 11.5px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    overflow-x: auto; white-space: pre;
+  }
+  .cites { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+  .cite {
+    display: grid; grid-template-columns: 26px minmax(0,1fr); gap: 2px 8px;
+    font-size: 12px; color: var(--ink-soft);
+    padding: 6px 8px; border-radius: 8px; background: #fafafa; border: 1px solid #f1f0ef;
+  }
+  .cite .cn {
+    grid-row: 1 / 3;
+    width: 24px; height: 24px; border-radius: 7px;
+    display: grid; place-items: center; font-size: 10.5px; font-weight: 800;
+    background: var(--brand-soft); color: var(--brand-deep); border: 1px solid var(--brand-line);
+  }
+  .cite .ct { color: var(--gray); font-size: 11.5px; }
+
+  /* ---------- human gate ---------- */
+  .gate-list { display: flex; flex-direction: column; gap: 9px; }
+  .panel { display: none; }
+  .panel.show { display: block; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .panel h4 { margin: 0 0 8px; font-size: 14px; font-weight: 800; }
+  .panel p { margin: 0 0 8px; font-size: 13px; color: var(--ink-soft); }
+  .access-row {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 8px 10px; border-radius: 10px;
+    border: 1px solid var(--line); margin-bottom: 7px;
+  }
+  .access-row .ax { flex: 1 1 180px; min-width: 0; }
+  .access-row .ax b { font-size: 13px; display: block; }
+  .access-row .ax span { font-size: 12px; color: var(--gray); display: block; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 999px;
+    font-size: 11.5px; font-weight: 800; white-space: nowrap;
+  }
+  .pill.pass { color: var(--green); background: var(--green-soft); border: 1px solid var(--green-line); }
+  .pill.warn { color: var(--amber); background: var(--amber-soft); border: 1px solid var(--amber-line); }
+  .pill.block { color: var(--red); background: var(--red-soft); border: 1px solid var(--red-line); }
+  .pill.brand { color: var(--brand-deep); background: var(--brand-soft); border: 1px solid var(--brand-line); }
+  .blocked-banner {
+    display: flex; gap: 8px; align-items: flex-start;
+    margin-top: 10px; padding: 9px 11px; border-radius: 10px;
+    background: var(--red-soft); border: 1px solid var(--red-line);
+    font-size: 12.5px; color: var(--red); font-weight: 700;
+  }
+  .note-box {
+    margin-top: 8px; padding: 8px 11px; border-radius: 10px;
+    background: var(--amber-soft); border: 1px solid var(--amber-line);
+    font-size: 12.5px; color: var(--amber);
+  }
+  .deploy-review { font-size: 13px; display: flex; flex-direction: column; gap: 7px; margin-bottom: 10px; }
+  .deploy-review .dr { display: flex; gap: 8px; }
+  .deploy-review .dr dt { flex: 0 0 92px; color: var(--gray-soft); font-weight: 600; font-size: 12.5px; }
+  .deploy-review .dr dd { margin: 0; font-weight: 600; color: var(--ink-soft); overflow-wrap: anywhere; }
+  .progress { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; font-size: 12.5px; font-weight: 600; color: var(--gray); }
+  .progress .pl { display: flex; gap: 8px; align-items: center; }
+  .progress .pl.done { color: var(--green); }
+  .progress .pl.now { color: var(--brand-deep); }
+  .status-live {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 13px; font-weight: 800; color: var(--green);
+  }
+  .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: blink 1.2s ease-in-out infinite; }
+  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn-row button { min-height: 46px; flex: 1 1 auto; }
+
+  /* ---------- adoption impact ---------- */
+  .impact-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; }
+  .impact-tile {
+    padding: 10px 8px; border-radius: 12px; text-align: center;
+    background: #fafafa; border: 1px solid var(--line);
+  }
+  .impact-tile .num { font-size: 20px; font-weight: 800; letter-spacing: -.01em; }
+  .impact-tile .lbl { font-size: 11.5px; color: var(--gray); font-weight: 600; margin-top: 2px; }
+  .impact-tile.hot { background: var(--brand-soft); border-color: var(--brand-line); }
+  .impact-tile.hot .num { color: var(--brand-deep); }
+  .impact-line {
+    margin-top: 10px; padding: 9px 11px; border-radius: 10px;
+    background: #fafafa; border: 1px solid var(--line);
+    font-size: 13px; color: var(--ink-soft);
+  }
+  .impact-line b { color: var(--ink); }
+
+  /* ---------- health strip (secondary only) ---------- */
+  .health {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin: 14px 14px 18px; padding: 9px 13px;
+    background: #fff; border: 1px solid var(--line); border-radius: 12px;
+    font-size: 12px;
+  }
+  .health .h-label { color: var(--gray-soft); font-weight: 800; text-transform: uppercase; letter-spacing: .06em; font-size: 10.5px; }
+  .health .h-item { color: var(--gray); font-weight: 600; }
+  .health .h-item b { color: var(--ink-soft); }
+
+  footer {
+    margin: 0 14px 26px; padding: 12px 14px;
+    border-top: 1px solid var(--line);
+    font-size: 12px; color: var(--gray); line-height: 1.55;
+  }
+
+  /* ---------- tablet ---------- */
+  @media (min-width: 760px) {
+    .topbar { padding: 12px 20px; }
+    .walk { margin: 14px 20px 16px; }
+    .grid { margin: 0 20px; grid-template-columns: minmax(0,1fr) minmax(0,1.15fr); }
+    .card { padding: 16px 18px; }
+    .health { margin: 16px 20px 20px; }
+    footer { margin: 0 20px 30px; }
+    .kv-row { grid-template-columns: 128px minmax(0,1fr); }
+  }
+  /* ---------- desktop ---------- */
+  @media (min-width: 1120px) {
+    .grid { grid-template-columns: minmax(0,1fr) minmax(0,1.25fr) minmax(0,1fr); gap: 16px; }
+    .grid > #colEngagement { grid-column: 1; grid-row: 1; }
+    .grid > #colProcess { grid-column: 1; grid-row: 2; }
+    .grid > #colImpact { grid-column: 1; grid-row: 3; }
+    .grid > #colPacket { grid-column: 2; grid-row: 1 / 4; }
+    .grid > #colGate { grid-column: 3; grid-row: 1 / 4; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="mark">
+    <div class="logo">g</div>
+    <div class="name">Gumloop <small>Agent Delivery Console</small></div>
+  </div>
+  <div class="crumb"><span>Enterprise delivery</span><span class="sep">/</span><span>RevOps</span></div>
+  <div class="topbar-right">
+    <span class="chip brand"><span class="dot"></span>Synthetic</span>
+    <span class="chip">No sign-in</span>
+  </div>
+</header>
+
+<section class="walk" id="walk">
+  <span class="walk-label">90-sec walkthrough</span>
+  <span class="steps" id="steps"></span>
+  <span class="caption" id="caption"></span>
+  <div class="walk-actions">
+    <button class="ghost" id="replayBtn" type="button">Replay</button>
+    <button class="primary" id="nextBtn" type="button">Next step</button>
+  </div>
+</section>
+
+<main class="grid">
+
+  <!-- ============ ENGAGEMENT STUB ============ -->
+  <section class="card" id="colEngagement">
+    <h3>Engagement <span class="tag"><span class="pill warn">Post-sale</span></span></h3>
+    <p class="sub">Loaded from the sales handoff. FDE owns discovery to first production run.</p>
+    <dl class="kv">
+      <div class="kv-row"><dt>Customer</dt><dd>Meridian Freight &amp; Logistics</dd></div>
+      <div class="kv-row"><dt>Process to automate</dt><dd>CRM update from call notes</dd></div>
+      <div class="kv-row"><dt>Systems to connect</dt><dd>Salesloft (calls), HubSpot (CRM), Slack (team)</dd></div>
+      <div class="kv-row"><dt>Success metric</dt><dd>RevOps hours saved per week</dd></div>
+      <div class="kv-row"><dt>Owners</dt><dd>Priya Raman (RevOps) · Ami (FDE)</dd></div>
+    </dl>
+    <div class="metric"><b>Why this matters:</b> reps and RevOps manually re-type call outcomes into HubSpot. The agent writes them from transcripts instead.</div>
+  </section>
+
+  <!-- ============ PROCESS MAP ============ -->
+  <section class="card" id="colProcess">
+    <h3>Process to automate <span class="tag"><span class="pill pass">Mapped</span></span></h3>
+    <p class="sub">Mapped in the discovery session with Priya. Four steps, no approval gaps.</p>
+    <div class="flow">
+      <div class="flow-step"><span class="n">1</span><span class="txt"><b>Call ends</b> in Salesloft and the transcript lands in Slack <b>#call-notes</b>.</span></div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step"><span class="n">2</span><span class="txt">An agent extracts <b>contact, deal, stage, summary, next step</b> from the transcript.</span></div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step"><span class="n">3</span><span class="txt">Agent updates <b>HubSpot</b> and files a cited <b>artifact</b> with the source lines.</span></div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step"><span class="n">4</span><span class="txt"><b>#crm-updates</b> gets a one-line summary per call. Ops never opens the CRM.</span></div>
+    </div>
+  </section>
+
+  <!-- ============ DELIVERY PACKET ============ -->
+  <section class="card" id="colPacket">
+    <h3>Agent delivery packet <span class="tag"><span class="pill brand" id="statusPill">Draft</span></span></h3>
+    <p class="sub">What the deployed agent is made of. Each piece names a public Gumloop capability.</p>
+
+    <div class="packet-group">
+      <div class="packet-label">Connectors / MCP servers</div>
+      <div class="chips">
+        <span class="conn"><span class="dot"></span><span class="ok">HubSpot MCP</span> · read + write</span>
+        <span class="conn"><span class="dot"></span><span class="ok">Salesloft MCP</span> · transcripts</span>
+        <span class="conn"><span class="dot"></span><span class="ok">Slack MCP</span> · trigger + notify</span>
+        <span class="conn"><span class="dot"></span>Company Brain · linked</span>
+      </div>
+    </div>
+
+    <div class="packet-group">
+      <div class="packet-label">Skill</div>
+      <div class="packet-line">
+        <span><b>RevOps call-to-CRM</b> skill: reads a transcript, matches the contact and deal, extracts stage and next steps, and drafts the HubSpot write with cited lines. Trained on 60 transcripts from Meridian's Salesloft history.</span>
+      </div>
+    </div>
+
+    <div class="packet-group">
+      <div class="packet-label">Trigger</div>
+      <div class="packet-line">
+        <span><b>Slack trigger</b> on <b>#call-notes</b>: new transcript thread starts a run automatically. Fallback: nightly sweep for calls with no CRM update.</span>
+      </div>
+    </div>
+
+    <div class="packet-group">
+      <div class="packet-label">Data shape written back to HubSpot</div>
+      <pre class="dshape">{
+  "contact":   "j.moreno@meridian-freight.com",
+  "deal":      "Meridian East · D-4821",
+  "stage":     "proposal → negotiation",
+  "summary":   "Moved to annual plan; pricing hold on add-ons",
+  "next_step": "Send revised MSA by Friday",
+  "source":    "transcript #T-9182 · slack #call-notes"
+}</pre>
+    </div>
+
+    <div class="ready-strip">
+      <span class="readiness"><span></span>HubSpot MCP connected</span>
+      <span class="readiness"><span></span>Slack trigger installed</span>
+      <span class="readiness"><span></span>Salesloft read OK</span>
+      <span class="readiness"><span></span>Skill · 60 transcripts</span>
+      <span class="readiness"><span></span>Guardrails · append-only writes</span>
+      <span class="readiness warn"><span></span>Validation · 6 of 48 flagged</span>
+    </div>
+
+    <div class="cites">
+      <div class="cite">
+        <span class="cn">C1</span>
+        <span>CRM agents update HubSpot from Slack and call transcripts, "write back without rep typing".</span>
+        <span class="ct">Gumloop · CRM Agent use case (public)</span>
+      </div>
+      <div class="cite">
+        <span class="cn">C2</span>
+        <span>HubSpot MCP server: manage contacts, companies, deals, and engagements with AI.</span>
+        <span class="ct">Gumloop · Connectors (public)</span>
+      </div>
+      <div class="cite">
+        <span class="cn">C3</span>
+        <span>Triggers: tell agents what to monitor in plain English; they act when conditions match.</span>
+        <span class="ct">Gumloop · Triggers (public)</span>
+      </div>
+      <div class="cite">
+        <span class="cn">C4</span>
+        <span>Skills are reusable playbooks agents write, refine, and share.</span>
+        <span class="ct">Gumloop · Skills (public)</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HUMAN GATE ============ -->
+  <section class="card" id="colGate">
+    <h3>Human gate <span class="tag"><span class="pill pass">Your call</span></span></h3>
+    <p class="sub">The FDE owns the deploy decision. Nothing ships without a human tap.</p>
+
+    <div class="gate-list" id="gateList">
+      <button class="gate" id="deployGateBtn" type="button">
+        <span class="icon">D</span>
+        <span><span class="gt">Deploy agent</span><br><span class="sub">Packet is ready: connectors connected, trigger installed, skill validated. Push to Meridian's workspace.</span></span>
+      </button>
+      <button class="gate" id="dataGateBtn" type="button">
+        <span class="icon">A</span>
+        <span><span class="gt">Need data access</span><br><span class="sub">Customer IT holds scopes: HubSpot write needs admin approval; the data lake connector is new to them.</span></span>
+      </button>
+      <button class="gate" id="iterateGateBtn" type="button">
+        <span class="icon">I</span>
+        <span><span class="gt">Iterate skills</span><br><span class="sub">Validation flagged 6 of 48 runs mis-mapping deal stage. Retrain before production.</span></span>
+      </button>
+      <button class="gate neutral" id="escalateGateBtn" type="button">
+        <span class="icon">E</span>
+        <span><span class="gt">Escalate to Product</span><br><span class="sub">Platform gap: the Slack trigger cannot follow multi-part reply threads on this workspace plan.</span></span>
+      </button>
+    </div>
+
+    <!-- Deploy panel -->
+    <div class="panel" id="deployPanel">
+      <h4>Deploy "Call Notes → HubSpot CRM"</h4>
+      <dl class="deploy-review">
+        <div class="dr"><dt>Agent</dt><dd>gl-crm-call-notes · v1</dd></div>
+        <div class="dr"><dt>Trigger</dt><dd>Slack #call-notes · new transcript thread</dd></div>
+        <div class="dr"><dt>Writes</dt><dd>HubSpot contact, deal, task · append-only</dd></div>
+        <div class="dr"><dt>Guardrails</dt><dd>No deletions · manager approval for stage changes</dd></div>
+        <div class="dr"><dt>Target</dt><dd>Meridian RevOps team · owner Priya Raman</dd></div>
+      </dl>
+      <div class="btn-row">
+        <button class="primary" id="deployBtn" type="button">Deploy agent</button>
+      </div>
+      <div class="progress" id="deployProgress"></div>
+      <div class="status-live hidden" id="liveStatus"><span class="pulse-dot"></span>Live · running on the Slack trigger</div>
+    </div>
+
+    <!-- Need data access panel -->
+    <div class="panel" id="dataPanel">
+      <h4>Missing access to unblock</h4>
+      <p>These were scoped in discovery. Each one is a delivery dependency with an owner and a date.</p>
+      <div class="access-row" data-req="hubspot">
+        <div class="ax"><b>HubSpot write scope</b><span>Agent writes contacts and deals. Read scopes are already granted.</span></div>
+        <span class="pill warn" id="reqHubPill">Not granted</span>
+        <button class="linklike" id="reqHubBtn" type="button">Request from IT</button>
+      </div>
+      <div class="access-row" data-req="lake">
+        <div class="ax"><b>Data lake connector</b><span>Enrichment reads from customer Snowflake. New connector for their IT team.</span></div>
+        <span class="pill warn" id="reqLakePill">Not granted</span>
+        <button class="linklike" id="reqLakeBtn" type="button">Request from IT</button>
+      </div>
+      <div class="access-row" data-req="brain">
+        <div class="ax"><b>Company Brain link</b><span>Give the skill their approved pricing playbook. Needs legal review.</span></div>
+        <span class="pill warn" id="reqBrainPill">Not granted</span>
+        <button class="linklike" id="reqBrainBtn" type="button">Request from IT</button>
+      </div>
+      <div class="blocked-banner" id="dataBlocked">Deploy blocked while access is pending. Checklist, owner, and date go in the customer handoff.</div>
+      <p style="margin-top:8px;" class="hidden" id="dataDemoLine">
+        <button class="linklike" id="grantDemoBtn" type="button">Demo: mark all access as granted</button>
+        <span style="color:var(--gray-soft);font-size:12px;">simulates IT approval so Deploy unblocks</span>
+      </p>
+    </div>
+
+    <!-- Iterate skills panel -->
+    <div class="panel" id="iteratePanel">
+      <h4>Iterate the skill before production</h4>
+      <p>Validation run on 48 transcripts: <b>42 correct</b>, <b>6 mis-mapped the deal stage</b>. The mis-maps cluster on calls that discuss proposals.</p>
+      <div class="packet-line" style="margin-bottom:7px;"><span><b>1 · Retrain</b> on the 20 flagged transcripts sampled with Priya.</span></div>
+      <div class="packet-line" style="margin-bottom:7px;"><span><b>2 · Verify</b> stage changes against Meridian's HubSpot property list before writing.</span></div>
+      <div class="packet-line" style="margin-bottom:7px;"><span><b>3 · Pin</b> the stage taxonomy so "proposal" and "negotiation" never blur.</span></div>
+      <div class="btn-row">
+        <button class="primary" id="iterateBtn" type="button">Apply iteration · skill v2</button>
+      </div>
+      <div class="note-box hidden" id="iterateDone">Skill v2 staged: retrained + verification node. Recheck shows 0 mis-maps. Recommended before deploy, not blocking.</div>
+    </div>
+
+    <!-- Escalate panel -->
+    <div class="panel" id="escalatePanel">
+      <h4>Platform gap: multi-part Slack threads</h4>
+      <p>On Meridian's workspace plan, the Slack trigger watches new threads but cannot follow replies across channels. Multi-step approvals (deal desk) would fail mid-run.</p>
+      <div class="packet-line" style="margin-bottom:7px;"><span><b>Impact:</b> the two-approval deal flow is a stated requirement in the MSA scope.</span></div>
+      <div class="packet-line" style="margin-bottom:8px;"><span><b>Workaround:</b> deploy the single-channel trigger now; approvals enforced via HubSpot tasks.</span></div>
+      <div class="btn-row">
+        <button class="primary" id="escalateBtn" type="button">File to Product</button>
+      </div>
+      <div class="note-box hidden" id="escalateDone">Filed · GL-4821 · run logs and MSA scope attached. Product triage Tuesday. Deploy path is unchanged.</div>
+    </div>
+  </section>
+
+  <!-- ============ ADOPTION IMPACT ============ -->
+  <section class="card" id="colImpact">
+    <h3>Adoption impact <span class="tag"><span class="pill warn" id="impactPill">Not deployed</span></span></h3>
+    <p class="sub">Measured on Meridian's workspace. One line for executives, run log for operators.</p>
+    <div class="impact-grid">
+      <div class="impact-tile" id="tileRuns"><div class="num" id="numRuns">0</div><div class="lbl">Runs succeeded</div></div>
+      <div class="impact-tile" id="tileHours"><div class="num" id="numHours">0</div><div class="lbl">Hours saved / wk</div></div>
+      <div class="impact-tile" id="tileOwners"><div class="num" id="numOwners">0</div><div class="lbl">Owners enabled</div></div>
+    </div>
+    <div class="impact-line" id="impactLine">No agent runs yet in this engagement. Deploy to start measuring adoption.</div>
+  </section>
+</main>
+
+<section class="health">
+  <span class="h-label">Delivery readiness · secondary data only</span>
+  <span class="h-item">HubSpot MCP <b>connected</b></span>
+  <span class="h-item">Slack trigger <b>installed</b></span>
+  <span class="h-item">Skill <b>60 transcripts</b></span>
+  <span class="h-item">Guardrails <b>append-only</b></span>
+  <span class="h-item">Baseline <b>12 validation runs</b></span>
+</section>
+
+<footer>
+  Unofficial synthetic prototype for a Forward Deployed Agentic Engineer role exercise. Not affiliated with Gumloop. No accounts, no real customer data, no Gumloop API calls. Vocabulary follows Gumloop public materials: agents, triggers, skills, MCP, connectors, Company Brain, artifacts. Citations C1-C4 reference public Gumloop pages.
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+
+  var state = {
+    step: 0,
+    deployed: false,
+    dataBlocked: false,
+    dataGranted: false,
+    iterated: false,
+    escalated: false
+  };
+
+  var CAPTIONS = [
+    "A post-sale engagement is loaded: Meridian's RevOps wants call notes to update HubSpot without reps typing. Process to automate, systems to connect, one success metric: RevOps hours saved per week.",
+    "The delivery packet: HubSpot MCP + Salesloft transcripts + Slack trigger + a skill trained on 60 transcripts. Each piece cites a public Gumloop source, and readiness chips show what is connected now.",
+    "A human gate sits between the packet and production: Deploy agent, Need data access, Iterate skills, or Escalate to Product. The FDE owns this call. No pass/fail score in the hero.",
+    "One tap deploys the agent to Meridian's workspace: graph built, validated on 12 transcripts, Live in seconds.",
+    "Adoption impact: runs succeeded, hours saved, owners enabled. Executives get one line, operators get the run log.",
+    "Handoff: Customer Success and Education take ownership of the Live agent. This deployment becomes a reusable RevOps pattern."
+  ];
+  var STEP_NAMES = ["Load", "Packet", "Gate", "Deploy", "Impact", "Done"];
+  var PER = "<b>Step ";
+
+  function refreshWalk() {
+    var dots = document.querySelectorAll(".step-dot");
+    for (var i = 0; i < dots.length; i++) {
+      dots[i].className = "step-dot" + (i < state.step ? " past" : (i === state.step ? " now" : ""));
+    }
+    $("caption").innerHTML = PER + (state.step + 1) + " · " + STEP_NAMES[state.step] + ":</b> " + CAPTIONS[state.step];
+    $("nextBtn").disabled = state.step >= CAPTIONS.length - 1;
+    $("nextBtn").textContent = state.step >= CAPTIONS.length - 1 ? "Done" : "Next step";
+  }
+
+  function buildSteps() {
+    var box = $("steps");
+    box.innerHTML = "";
+    STEP_NAMES.forEach(function (n, i) {
+      var d = document.createElement("span");
+      d.className = "step-dot";
+      d.textContent = i + 1;
+      box.appendChild(d);
+    });
+  }
+
+  function flash(el) {
+    if (typeof el === "string") { el = $(el); }
+    el.classList.remove("flash");
+    void el.offsetWidth;
+    el.classList.add("flash");
+    setTimeout(function () { el.classList.remove("flash"); }, 4600);
+  }
+
+  function hidePanels() {
+    ["deployPanel", "dataPanel", "iteratePanel", "escalatePanel"].forEach(function (id) {
+      $(id).className = "panel";
+    });
+  }
+  function showPanel(id) {
+    var p = $(id);
+    p.classList.remove("fade-in");
+    void p.offsetWidth;
+    p.className = "panel show";
+    p.classList.add("fade-in");
+    flash(id);
+  }
+  function closeGatePanels() {
+    ["deployPanel", "dataPanel", "iteratePanel", "escalatePanel"].forEach(function (id) {
+      $(id).className = "panel";
+    });
+  }
+
+  /* ---------------- deploy ---------------- */
+  var deployInFlight = false;
+  function deploy() {
+    if (state.deployed || deployInFlight) { return; }
+    if (state.dataBlocked) { return; }
+    deployInFlight = true;
+    $("deployBtn").disabled = true;
+    var prog = $("deployProgress");
+    prog.innerHTML = "";
+    var lines = [
+      ["Building agent graph", "connectors + skill + trigger wired"],
+      ["Validating on 12 transcripts", "synthetic replay against Meridian history"],
+      ["Live", "running on the Slack trigger"]
+    ];
+    lines.forEach(function (ln, i) {
+      var pl = document.createElement("div");
+      pl.className = "pl";
+      pl.id = "pl" + i;
+      pl.innerHTML = "<span class='pulse-dot' style='animation:none;'></span><span>" + ln[0] + "</span><span style='color:var(--gray-soft);font-weight:500;'>" + ln[1] + "</span>";
+      prog.appendChild(pl);
+      if (i === 0) { pl.classList.add("now"); }
+    });
+    var i = 0;
+    var timer = setInterval(function () {
+      i += 1;
+      if (i > 1) { $("pl" + (i - 2)).className = "pl done"; }
+      if (i >= lines.length) {
+        clearInterval(timer);
+        state.deployed = true;
+        deployInFlight = false;
+        $("pl" + (lines.length - 1)).className = "pl done";
+        $("liveStatus").className = "status-live fade-in";
+        $("statusPill").className = "pill pass";
+        $("statusPill").textContent = "Live";
+        $("impactPill").className = "pill pass";
+        $("impactPill").textContent = "Live · week 1";
+        $("deployGateBtn").disabled = true;
+        $("deployGateBtn").querySelector(".gt").textContent = "Live · running";
+        $("impactLine").innerHTML = "<b>Live:</b> 142 runs succeeded, 38 hours saved per week, 8 owners enabled. Adoption proving out in week 1, and IT kept control of data and spend.";
+        countUp($("numRuns"), 142);
+        countUp($("numHours"), 38);
+        countUp($("numOwners"), 8);
+        $("tileRuns").className = "impact-tile hot";
+        $("tileHours").className = "impact-tile hot";
+        $("tileOwners").className = "impact-tile hot";
+        flash("colImpact");
+      }
+    }, 900);
+  }
+
+  function countUp(el, target) {
+    var t0 = null;
+    function frame(ts) {
+      if (t0 === null) { t0 = ts; }
+      var p = Math.min(1, (ts - t0) / 1100);
+      var eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(target * eased);
+      if (p < 1) { requestAnimationFrame(frame); }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------------- need data access ---------------- */
+  var reqs = { hub: false, lake: false, brain: false };
+  function refreshReqs() {
+    var anyPending = reqs.hub || reqs.lake || reqs.brain;
+    if (state.dataGranted) {
+      $("reqHubPill").className = "pill pass"; $("reqHubPill").textContent = "Granted";
+      $("reqLakePill").className = "pill pass"; $("reqLakePill").textContent = "Granted";
+      $("reqBrainPill").className = "pill pass"; $("reqBrainPill").textContent = "Granted";
+      $("dataBlocked").className = "hidden";
+      $("dataDemoLine").className = "hidden";
+      state.dataBlocked = false;
+      return;
+    }
+    $("reqHubPill").className = "pill " + (reqs.hub ? "warn" : "block");
+    $("reqHubPill").textContent = reqs.hub ? "Requested" : "Not granted";
+    $("reqLakePill").className = "pill " + (reqs.lake ? "warn" : "block");
+    $("reqLakePill").textContent = reqs.lake ? "Requested" : "Not granted";
+    $("reqBrainPill").className = "pill " + (reqs.brain ? "warn" : "block");
+    $("reqBrainPill").textContent = reqs.brain ? "Requested" : "Not granted";
+    $("reqHubBtn").disabled = reqs.hub;
+    $("reqLakeBtn").disabled = reqs.lake;
+    $("reqBrainBtn").disabled = reqs.brain;
+    $("dataBlocked").className = anyPending ? "blocked-banner" : "hidden";
+    $("dataBlocked").textContent = anyPending
+      ? "Deploy blocked while access is pending. Checklist, owner, and date go in the customer handoff."
+      : "Deploy blocked while access is pending. Checklist, owner, and date go in the customer handoff.";
+    $("dataDemoLine").className = anyPending ? "" : "hidden";
+    var blocked = anyPending && !state.dataGranted;
+    if (blocked !== state.dataBlocked) {
+      state.dataBlocked = blocked;
+    }
+  }
+  function requestAccess(key, btnId) {
+    if (key === "hub") { reqs.hub = true; }
+    if (key === "lake") { reqs.lake = true; }
+    if (key === "brain") { reqs.brain = true; }
+    refreshReqs();
+    if (state.dataBlocked) {
+      $("deployBtn").disabled = true;
+      $("deployGateBtn").disabled = true;
+      $("deployGateBtn").querySelector(".gt").textContent = "Deploy blocked";
+    }
+  }
+  function grantAll() {
+    state.dataGranted = true;
+    refreshReqs();
+    if (!state.deployed) {
+      $("deployBtn").disabled = false;
+      $("deployGateBtn").disabled = false;
+      $("deployGateBtn").querySelector(".gt").textContent = "Deploy agent";
+    }
+    var ok = document.createElement("div");
+    ok.className = "blocked-banner";
+    ok.style.borderColor = "var(--green-line)";
+    ok.style.background = "var(--green-soft)";
+    ok.style.color = "var(--green)";
+    ok.textContent = "Access granted by IT (demo). Deploy is unblocked.";
+    var demoLine = $("dataDemoLine");
+    demoLine.parentNode.insertBefore(ok, demoLine.nextSibling);
+  }
+
+  /* ---------------- iterate ---------------- */
+  function iterate() {
+    if (state.iterated) { return; }
+    state.iterated = true;
+    $("iterateBtn").disabled = true;
+    $("iterateDone").className = "note-box fade-in";
+    flash("colPacket");
+    var readiness = document.querySelectorAll(".ready-strip .readiness");
+    readiness[3].innerHTML = "<span></span>Skill v2 · 80 transcripts";
+    var warn = readiness[5];
+    warn.classList.remove("warn");
+    warn.innerHTML = "<span></span>Validation · 0 flagged after recheck";
+  }
+
+  /* ---------------- escalate ---------------- */
+  function escalate() {
+    if (state.escalated) { return; }
+    state.escalated = true;
+    $("escalateBtn").disabled = true;
+    $("escalateDone").className = "note-box fade-in";
+  }
+
+  /* ---------------- walk steps ---------------- */
+  var steps = [
+    function () { flash("colEngagement"); },
+    function () { flash("colPacket"); },
+    function () { flash("colGate"); },
+    function () {
+      closeGatePanels();
+      showPanel("deployPanel");
+      if (!state.dataBlocked) { $("deployBtn").disabled = false; }
+      deploy();
+    },
+    function () { flash("colImpact"); },
+    function () { }
+  ];
+
+  function goNext() {
+    if (state.step < CAPTIONS.length - 1) {
+      state.step += 1;
+      refreshWalk();
+      steps[state.step]();
+    }
+  }
+
+  function replay() {
+    state = { step: 0, deployed: false, dataBlocked: false, dataGranted: false, iterated: false, escalated: false };
+    reqs = { hub: false, lake: false, brain: false };
+    deployInFlight = false;
+    closeGatePanels();
+    $("deployBtn").disabled = false;
+    $("deployProgress").innerHTML = "";
+    $("liveStatus").className = "status-live hidden";
+    $("statusPill").className = "pill brand";
+    $("statusPill").textContent = "Draft";
+    $("impactPill").className = "pill warn";
+    $("impactPill").textContent = "Not deployed";
+    $("deployGateBtn").disabled = false;
+    $("deployGateBtn").querySelector(".gt").textContent = "Deploy agent";
+    $("impactLine").textContent = "No agent runs yet in this engagement. Deploy to start measuring adoption.";
+    $("numRuns").textContent = "0";
+    $("numHours").textContent = "0";
+    $("numOwners").textContent = "0";
+    $("tileRuns").className = "impact-tile";
+    $("tileHours").className = "impact-tile";
+    $("tileOwners").className = "impact-tile";
+    $("iterateBtn").disabled = false;
+    $("iterateDone").className = "note-box hidden";
+    $("escalateBtn").disabled = false;
+    $("escalateDone").className = "note-box hidden";
+    var readiness = document.querySelectorAll(".ready-strip .readiness");
+    readiness[3].innerHTML = "<span></span>Skill · 60 transcripts";
+    readiness[5].className = "readiness warn";
+    readiness[5].innerHTML = "<span></span>Validation · 6 of 48 flagged";
+    refreshReqs();
+    refreshWalk();
+    flash("colEngagement");
+  }
+
+  /* ---------------- wire up ---------------- */
+  $("nextBtn").addEventListener("click", goNext);
+  $("replayBtn").addEventListener("click", replay);
+  $("deployGateBtn").addEventListener("click", function () {
+    closeGatePanels();
+    showPanel("deployPanel");
+  });
+  $("dataGateBtn").addEventListener("click", function () {
+    closeGatePanels();
+    showPanel("dataPanel");
+    refreshReqs();
+  });
+  $("iterateGateBtn").addEventListener("click", function () {
+    closeGatePanels();
+    showPanel("iteratePanel");
+  });
+  $("escalateGateBtn").addEventListener("click", function () {
+    closeGatePanels();
+    showPanel("escalatePanel");
+  });
+  $("deployBtn").addEventListener("click", deploy);
+  $("reqHubBtn").addEventListener("click", function () { requestAccess("hub"); });
+  $("reqLakeBtn").addEventListener("click", function () { requestAccess("lake"); });
+  $("reqBrainBtn").addEventListener("click", function () { requestAccess("brain"); });
+  $("grantDemoBtn").addEventListener("click", grantAll);
+  $("iterateBtn").addEventListener("click", iterate);
+  $("escalateBtn").addEventListener("click", escalate);
+
+  buildSteps();
+  refreshReqs();
+  refreshWalk();
+})();
+</script>
+</body>
+</html>
